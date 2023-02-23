@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>10</integer>
+	<key>logs</key>
+	<dict>
+		<key>C14FFBAA-DE03-412C-B674-00FAE0B93BAF</key>
+		<dict>
+			<key>className</key>
+			<string>IDEActivityLogMajorGroupSection</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.target.product-type.tool</string>
+			<key>fileName</key>
+			<string>C14FFBAA-DE03-412C-B674-00FAE0B93BAF.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>signature</key>
+			<string>PeachParty-fnzrjhwlonssambqregembycrugx</string>
+			<key>timeStartedRecording</key>
+			<real>698875592.68912196</real>
+			<key>timeStoppedRecording</key>
+			<real>698875599.10603595</real>
+			<key>title</key>
+			<string>Build target PeachParty</string>
+			<key>uniqueIdentifier</key>
+			<string>C14FFBAA-DE03-412C-B674-00FAE0B93BAF</string>
+		</dict>
+	</dict>
+	<key>preserveOldLogs</key>
+	<true/>
+</dict>
+</plist>
