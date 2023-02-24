@@ -37,3 +37,7 @@ int StudentWorld::move()
 void StudentWorld::cleanUp()
 {
 }
+
+StudentWorld::~StudentWorld(){
+    cleanUp();
+}
