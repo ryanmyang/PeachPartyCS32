@@ -97,10 +97,14 @@ int StudentWorld::move()
 
 void StudentWorld::cleanUp()
 {
+
     for(int i = 0; i < m_actors.size(); i++) {
-        if(m_actors[i]!=nullptr)
+        if(m_actors[i]!=nullptr) {
+            std::cerr<<"size: " << m_actors.size() << "i" << i<< std::endl;
             delete m_actors[i];
+        }
     }
+    m_actors.clear();
 }
 
 StudentWorld::~StudentWorld(){
