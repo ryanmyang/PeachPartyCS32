@@ -16,9 +16,11 @@ class StudentWorld : public GameWorld
         virtual int move();
         virtual void cleanUp();
         virtual ~StudentWorld();
+    Board* getBoard() {return m_board;}
 
     private:
-        std::vector<Actor*> actors;
+        std::vector<Actor*> m_actors;
+        Board* m_board;
 };
 
 #endif // STUDENTWORLD_H_

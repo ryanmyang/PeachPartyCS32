@@ -29,7 +29,23 @@ class CoinSquare : public Actor {
         
 };
 
-class PlayerAvatar : public Actor {
+class MovingActor : public Actor {
+public:
+    MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir = 0);
+    int getTicks(){return m_ticks_to_move;}
+    void setTicks(int t){m_ticks_to_move = t;}
+    void setMoveDir(int d) {m_moveDir = d;}
+    int getMoveDir() {return m_moveDir;}
+    
+    
+private:
+    int m_ticks_to_move;
+    int m_moveDir = 0;
+
+    
+};
+
+class PlayerAvatar : public MovingActor {
 public:
     PlayerAvatar(StudentWorld* w, bool isPeach, int initX, int initY);
     virtual void doSomething();
@@ -37,7 +53,6 @@ private:
     int m_coins;
     int m_stars;
     Actor* m_vortex;
-    int m_ticks_to_move;
     bool m_waitingToRoll;
     int m_playerNum;
 };
