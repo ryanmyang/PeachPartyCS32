@@ -14,13 +14,19 @@ bool Actor::isAlive() {return m_alive;}
 void Actor::kill() {m_alive=false;}
 StudentWorld* Actor::getWorld() {return m_world;}
 
+// ---------------------- Activator ----------------------
+Activator::Activator(StudentWorld* w, int img, int initX, int initY, int dir, int depth):Actor(w, img, initX, initY, dir, depth) {
+    
+}
+
 // ---------------------- CoinSquare ----------------------
-CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Actor(w, IID_BLUE_COIN_SQUARE, initX, initY){
+CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Activator(w, grants?IID_BLUE_COIN_SQUARE:IID_RED_COIN_SQUARE, initX, initY, right, 1),Actor(w, grants?IID_BLUE_COIN_SQUARE:IID_RED_COIN_SQUARE, initX, initY, right, 1){
     m_grantsCoins = grants;
 }
 
 void CoinSquare::doSomething() {
     if (!isAlive()) return;
+    
     
 }
 
@@ -30,9 +36,25 @@ MovingActor::MovingActor(StudentWorld* w, int img, int initX, int initY, int mov
     m_moveDir = moveDir;
 }
 
+// True if needs to change direction because the board is empty
+// If not firmly on a square, or if the next one isn't empty, return true
+bool MovingActor::nextTileEmpty(int moveDir) {
+    if(getX()%16==0 && getY()%16==0){
+        int xCopy = getX();
+        int yCopy = getY();
+        //std::cerr << std::endl << "dir: " << getMoveDir() << "pos: " << getX() << "," << getY() << std::endl;
+        getPositionInThisDirection(moveDir, SPRITE_WIDTH, xCopy, yCopy);
+        
+        // If down or left, change the next position to be just one pixel left (and then truncated)
+        
+        Board::GridEntry nextTile = getWorld()->getBoard()->getContentsOf(xCopy/BOARD_WIDTH, yCopy/BOARD_HEIGHT);
+        return nextTile==Board::empty;
+    }
+    return false;
+}
 
 // ---------------------- PlayerAvatar ----------------------
-PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):MovingActor(w, isPeach?IID_PEACH:IID_YOSHI, initX, initY) {
+PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):MovingActor(w, isPeach?IID_PEACH:IID_YOSHI, initX, initY),Actor(w, isPeach?IID_PEACH:IID_YOSHI, initX, initY) {
     m_coins = 0;
     m_stars = 0;
     m_vortex = nullptr;
@@ -43,37 +65,48 @@ PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):M
 
 
 void PlayerAvatar::doSomething(){
+    std::cerr << "playerdoing: " << m_playerNum << "empty?:" << nextTileEmpty(getMoveDir())<< "movedir: "<< getMoveDir() << std::endl;
 //    std::cerr << "doSomething()" << std::endl;
+    
+// Waiting to roll state
     if(m_waitingToRoll) {
-        int action =getWorld()->getAction(m_playerNum);
+        // a) Validate diraction
+        int ogMD = getMoveDir();
+        while(nextTileEmpty(getMoveDir())&& getMoveDir() !=ogMD) {
+            setMoveDir( (rand() % 4)*90 );
+            if(getMoveDir()==left) {
+                setDirection(180);
+            } else { setDirection(0);}
+        }
+        
+        
+        // b) Check for Action
+        int action = getWorld()->getAction(m_playerNum);
+        
+        // c) Action roll
         if (action == ACTION_ROLL){
             int dieRoll = 1+(rand() % 10);
             setTicks(dieRoll * 8);
             m_waitingToRoll = false;
         }
-        // Need action roll
-        else {
-            return;
+//[]    d) Action fire
+        else if(action == ACTION_FIRE) {
+            
         }
+        else { return; }
     }
     
     // Walking state
     if(!m_waitingToRoll) {
-        int xCopy = getX();
-        int yCopy = getY();
-        std::cerr << std::endl << "dir: " << getMoveDir() << "pos: " << getX() << "," << getY() << std::endl;
-        getPositionInThisDirection(getMoveDir(), SPRITE_WIDTH, xCopy, yCopy);
+//[]    a) If on directional square
         
-        // If down or left, change the next position to be just one pixel left (and then truncated)
-        if(getMoveDir()==270){yCopy+=SPRITE_HEIGHT-1;}
-        else if(getMoveDir()==180){xCopy+=SPRITE_WIDTH-1;}
-        yCopy=yCopy<0?-SPRITE_HEIGHT:yCopy;
-        xCopy=xCopy<0?-SPRITE_WIDTH:xCopy;
         
-        Board::GridEntry nextTile = getWorld()->getBoard()->getContentsOf(xCopy/BOARD_WIDTH, yCopy/BOARD_HEIGHT);
-        std::cerr << "nexttile: " <<xCopy/BOARD_WIDTH<<","<<yCopy/BOARD_HEIGHT << "empty?:" << (nextTile==Board::empty) << std::endl;
+//[]    b) If at fork
+        
+//      c) If can't continue in main direction
+        //std::cerr << "nexttile: " <<xCopy/BOARD_WIDTH<<","<<yCopy/BOARD_HEIGHT << "empty?:" << (nextTile==Board::empty) << std::endl;
         // If up or down, try left or right
-        if(nextTile==Board::empty && getMoveDir()%180==90) {
+        if(nextTileEmpty(getMoveDir()) && getMoveDir()%180==90) {
             // Check Right
             if(getWorld()->getBoard()->getContentsOf((getX()+SPRITE_WIDTH)/BOARD_WIDTH,getY()/BOARD_HEIGHT) != Board::empty) {
                 setDirection(0);
@@ -87,7 +120,7 @@ void PlayerAvatar::doSomething(){
         }
         
         // If left or right, check up or down
-        else if(nextTile==Board::empty && getMoveDir()%180==0) {
+        else if(nextTileEmpty(getMoveDir()) && getMoveDir()%180==0) {
             // Check up
             if(getWorld()->getBoard()->getContentsOf(getX()/BOARD_WIDTH,(getY()+SPRITE_HEIGHT)/BOARD_HEIGHT) != Board::empty) {
                 setMoveDir(90);
@@ -99,7 +132,8 @@ void PlayerAvatar::doSomething(){
                 setMoveDir(270);
             }
         }
-        
+
+//      d-f Move and end movestate
         moveAtAngle(getMoveDir(), 2);
         setTicks(getTicks()-1);
         if(getTicks()==0)

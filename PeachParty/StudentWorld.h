@@ -16,11 +16,14 @@ class StudentWorld : public GameWorld
         virtual int move();
         virtual void cleanUp();
         virtual ~StudentWorld();
+    std::vector<PlayerAvatar*> overlappingPlayers(Actor* a);
     Board* getBoard() {return m_board;}
 
     private:
         std::vector<Actor*> m_actors;
+        std::vector<PlayerAvatar*> m_players;
         Board* m_board;
+        
 };
 
 #endif // STUDENTWORLD_H_

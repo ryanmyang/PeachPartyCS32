@@ -40,8 +40,10 @@ int StudentWorld::init()
                     m_actors.push_back(new CoinSquare(this, false, i, j));
                     break;
                 case Board::player:
-                    m_actors.push_back(new PlayerAvatar(this,true,i,j));
+                    m_players.push_back(new PlayerAvatar(this,true,i,j));
+                    m_players.push_back(new PlayerAvatar(this,false,i,j));
                     m_actors.push_back(new CoinSquare(this, true, i, j));
+                    
                     break;
                 case Board::empty:
                     
@@ -76,6 +78,8 @@ int StudentWorld::init()
             }
         }
     }
+    
+    startCountdownTimer(99);
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -83,14 +87,43 @@ int StudentWorld::move()
 {
     // This code is here merely to allow the game to build, run, and terminate after you hit ESC.
     // Notice that the return value GWSTATUS_NOT_IMPLEMENTED will cause our framework to end the game.
+    
+    // Loop doSomething
+    
     for(int i = 0; i < m_actors.size(); i++) {
-        m_actors[i]->doSomething();
+        if(m_actors[i]->isAlive()) {
+            m_actors[i]->doSomething();
+        }
     }
+    
+    // Erase Dead Actors
+    for(int i = 0; i < m_actors.size(); i++) {
+        if(!m_actors[i]->isAlive()) {
+            delete m_actors[0];
+            m_actors.erase(m_actors.begin()+i);
+        }
+    }
+    for(int i = 0; i < m_players.size(); i++) {
+        if(m_players[i]->isAlive()) {
+            m_players[i]->doSomething();
+        }
+    }
+    
+    // Erase Dead Players
+    for(int i = 0; i < m_players.size(); i++) {
+        if(!m_players[i]->isAlive()) {
+            delete m_players[0];
+            m_players.erase(m_players.begin()+i);
+        }
+    }
+    
 //
 //    setGameStatText("Game will end in a few seconds");
-//    
-//    if (timeRemaining() <= 0)
-//		return GWSTATUS_NOT_IMPLEMENTED;
+//
+    // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
+    if (timeRemaining() <= 0){
+        return GWSTATUS_PEACH_WON;
+    }
 //    
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -100,13 +133,32 @@ void StudentWorld::cleanUp()
 
     for(int i = 0; i < m_actors.size(); i++) {
         if(m_actors[i]!=nullptr) {
-            std::cerr<<"size: " << m_actors.size() << "i" << i<< std::endl;
+            //std::cerr<<"size: " << m_actors.size() << "i" << i<< std::endl;
             delete m_actors[i];
         }
     }
     m_actors.clear();
+    
+    for(int i = 0; i < m_players.size(); i++) {
+        if(m_players[i]!=nullptr) {
+            //std::cerr<<"size: " << m_actors.size() << "i" << i<< std::endl;
+            delete m_players[i];
+        }
+    }
+    m_players.clear();
 }
 
 StudentWorld::~StudentWorld(){
     cleanUp();
 }
+
+std::vector<PlayerAvatar*> StudentWorld::overlappingPlayers(Actor* a) {
+    std::vector<PlayerAvatar*> v;
+    for(int i = 0; i < m_players.size(); i++) {
+        if(a->getX()==m_players[i]->getX() && a->getY()==m_players[i]->getY() ) {
+            v.push_back(m_players[i]);
+        }
+    }
+    return v;
+}
+
