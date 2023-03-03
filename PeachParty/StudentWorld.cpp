@@ -13,7 +13,7 @@ GameWorld* createStudentWorld(string assetPath)
 StudentWorld::StudentWorld(string assetPath)
 : GameWorld(assetPath)
 {
-    
+    m_bankBal = 0;
 }
 
 int StudentWorld::init()
@@ -22,12 +22,17 @@ int StudentWorld::init()
     m_board = new Board;
     string board_file = assetPath() + "board0" + to_string(getBoardNumber()) + ".txt";
     Board::LoadResult result = m_board->loadBoard(board_file);
-    if (result == Board::load_fail_file_not_found)
-    cerr << "Could not find board01.txt data file\n";
-    else if (result == Board::load_fail_bad_format)
-    cerr << "Your board was improperly formatted\n";
+    if (result == Board::load_fail_file_not_found) {
+        cerr << "Could not find board01.txt data file\n";
+        return GWSTATUS_BOARD_ERROR;
+    }
+    else if (result == Board::load_fail_bad_format) {
+        cerr << "Your board was improperly formatted\n";
+        return GWSTATUS_BOARD_ERROR;
+        
+    }
     else if (result == Board::load_success) {
-    cerr << "Successfully loaded board\n";
+        cerr << "Successfully loaded board\n";
     }
     
     for(int i = 0; i <=BOARD_WIDTH; i++) {
@@ -64,7 +69,7 @@ int StudentWorld::init()
                     
                     break;
                 case Board::bank_square:
-                    
+                    m_actors.push_back(new BankSquare(this, i, j));
                     break;
                 case Board::star_square:
                     m_actors.push_back(new StarSquare(this, i, j));
@@ -108,11 +113,23 @@ int StudentWorld::move()
     
     
 // Status Text
-    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: " + to_string(getPeach()->getStars()) + " $$: "+ to_string(getPeach()->getCoins()) + " VOR | Time: " + to_string(timeRemaining()) + " | Bank: 9 | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: " + to_string(getYoshi()->getStars()) + " $$: " + to_string(getYoshi()->getCoins()) );
+    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: " + to_string(getPeach()->getStars()) + " $$: "+ to_string(getPeach()->getCoins()) + " VOR | Time: " + to_string(timeRemaining()) + " | Bank: " + to_string(getBank()) + " | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: " + to_string(getYoshi()->getStars()) + " $$: " + to_string(getYoshi()->getCoins()) );
 //
     // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
     if (timeRemaining() <= 0){
-        return GWSTATUS_PEACH_WON;
+        PlayerAvatar* winner;
+        if ( m_peach->getStars() == m_yoshi->getStars() && m_peach->getCoins() == m_yoshi->getCoins() ) {
+            winner = 1+(rand()%2) == 1?m_yoshi:m_peach;
+        }
+        else if(m_peach->getStars()>m_yoshi->getStars()) {
+            winner = m_peach;
+        } else if (m_peach->getCoins()>m_yoshi->getCoins()) {
+            winner = m_peach;
+        } else {
+            winner = m_yoshi;
+        }
+        setFinalScore(winner->getStars(), winner->getCoins());
+        return winner == m_peach?GWSTATUS_PEACH_WON:GWSTATUS_YOSHI_WON;
     }
 //    
 	return GWSTATUS_CONTINUE_GAME;

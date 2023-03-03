@@ -21,7 +21,7 @@ Activator::Activator(StudentWorld* w, int img, int initX, int initY, int dir, in
 }
 
 void Activator::doSomething() {
-    
+    affectBothPlayers();
 }
 
 void Activator::affectBothPlayers() {
@@ -58,9 +58,7 @@ StarSquare::StarSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_S
 }
 
 void StarSquare::doSomething() {
-    if (!isAlive()) return;
     affectBothPlayers();
-    
 }
 
 void StarSquare::affectPlayer(PlayerAvatar * p) {
@@ -74,6 +72,33 @@ void StarSquare::affectPlayer(PlayerAvatar * p) {
     getWorld()->playSound(SOUND_GIVE_STAR);
 }
 
+ //---------------------- BankSquare ----------------------
+BankSquare::BankSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_BANK_SQUARE, initX, initY, right, 1),Actor(w, IID_BANK_SQUARE, initX, initY, right, 1){
+    
+}
+
+void BankSquare::doSomething() {
+    affectBothPlayers();
+}
+
+void BankSquare::affectPlayer(PlayerAvatar * p) {
+    std::cout << "Player stepping on bank: " << p->getPlayerNum() << std::endl;
+    // Exit if not new
+    if( (p->getLastX() == getX() && p->getLastY() == getY()) ) {return;}
+    
+    // If landed upon, give coins
+    if (p->getTicks() == 0) {
+        p->addCoins(getWorld()->getBank());
+        getWorld()->resetBank();
+        getWorld()->playSound(SOUND_WITHDRAW_BANK);
+    } else {
+        for(int i = 0; p->getCoins()>0 && i < 5; i++) {
+            p->addCoins(-1);
+            getWorld()->addBank(1);
+        }
+        getWorld()->playSound(SOUND_DEPOSIT_BANK);
+    }
+}
 
 // ---------------------- MovingActor ----------------------
 MovingActor::MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir):Actor(w, img, initX, initY) {
@@ -154,31 +179,31 @@ void PlayerAvatar::doSomething(){
     int numPaths = 0;
     for (int d = 0; d < 360; d+=90) {
         if(nextTileEmpty(d) == 0) numPaths++;
-        std::cout << "path angle testing: " << d << std::endl;
+        //std::cout << "path angle testing: " << d << std::endl;
     }
-    std::cout << "numpaths: " << numPaths << std::endl;
+    //std::cout << "numpaths: " << numPaths << std::endl;
     // IF AT FORK, attempt to change direction based on input
     if (numPaths >2) {
-        std::cout << "NUMPATHS OVER 2" << std::endl;
+        //std::cout << "NUMPATHS OVER 2" << std::endl;
         int action = getWorld()->getAction(m_playerNum);
         switch (action) {
             case ACTION_UP:
-                if (getMoveDir() == down) return;
+                if (getMoveDir() == down || nextTileEmpty(up)==1) return;
                 setMoveDir(up);
                 setDirection(0);
                 break;
             case ACTION_RIGHT:
-                if (getMoveDir() == left) return;
+                if (getMoveDir() == left || nextTileEmpty(right)==1) return;
                 setMoveDir(right);
                 setDirection(0);
                 break;
             case ACTION_DOWN:
-                if (getMoveDir() == up) return;
+                if (getMoveDir() == up || nextTileEmpty(down)==1) return;
                 setMoveDir(down);
                 setDirection(0);
                 break;
             case ACTION_LEFT:
-                if (getMoveDir() == right) return;
+                if (getMoveDir() == right || nextTileEmpty(left)==1) return;
                 setMoveDir(left);
                 setDirection(180);
                 break;

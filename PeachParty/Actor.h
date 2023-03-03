@@ -50,8 +50,14 @@ public:
     virtual void affectPlayer(PlayerAvatar* p);
     StarSquare(StudentWorld* w, int initX, int initY);
     private:
-    
-        
+};
+
+class BankSquare : public Activator {
+public:
+    virtual void doSomething();
+    virtual void affectPlayer(PlayerAvatar* p);
+    BankSquare(StudentWorld* w, int initX, int initY);
+    private:
 };
 
 class MovingActor : virtual public Actor {

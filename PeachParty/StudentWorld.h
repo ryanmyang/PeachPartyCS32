@@ -19,12 +19,16 @@ class StudentWorld : public GameWorld
     PlayerAvatar* getPeach() {return m_peach;}
     PlayerAvatar* getYoshi() {return m_yoshi;}
     Board* getBoard() {return m_board;}
+    int getBank() {return m_bankBal;}
+    void addBank(int c) {m_bankBal+=c;}
+    void resetBank() {m_bankBal = 0;}
 
-    private:
-        std::vector<Actor*> m_actors;
+private:
+    std::vector<Actor*> m_actors;
     PlayerAvatar* m_yoshi;
     PlayerAvatar* m_peach;
     Board* m_board;
+    int m_bankBal;
         
 };
 
