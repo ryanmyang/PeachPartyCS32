@@ -16,13 +16,15 @@ class StudentWorld : public GameWorld
         virtual int move();
         virtual void cleanUp();
         virtual ~StudentWorld();
-    std::vector<PlayerAvatar*> overlappingPlayers(Actor* a);
+    PlayerAvatar* getPeach() {return m_peach;}
+    PlayerAvatar* getYoshi() {return m_yoshi;}
     Board* getBoard() {return m_board;}
 
     private:
         std::vector<Actor*> m_actors;
-        std::vector<PlayerAvatar*> m_players;
-        Board* m_board;
+    PlayerAvatar* m_yoshi;
+    PlayerAvatar* m_peach;
+    Board* m_board;
         
 };
 

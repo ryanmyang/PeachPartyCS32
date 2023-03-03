@@ -40,8 +40,8 @@ int StudentWorld::init()
                     m_actors.push_back(new CoinSquare(this, false, i, j));
                     break;
                 case Board::player:
-                    m_players.push_back(new PlayerAvatar(this,true,i,j));
-                    m_players.push_back(new PlayerAvatar(this,false,i,j));
+                    m_peach = new PlayerAvatar(this,true,i,j);
+                    m_yoshi = new PlayerAvatar(this,false,i,j);
                     m_actors.push_back(new CoinSquare(this, true, i, j));
                     
                     break;
@@ -103,22 +103,12 @@ int StudentWorld::move()
             m_actors.erase(m_actors.begin()+i);
         }
     }
-    for(int i = 0; i < m_players.size(); i++) {
-        if(m_players[i]->isAlive()) {
-            m_players[i]->doSomething();
-        }
-    }
+    m_peach->doSomething();
+    m_yoshi->doSomething();
     
-    // Erase Dead Players
-    for(int i = 0; i < m_players.size(); i++) {
-        if(!m_players[i]->isAlive()) {
-            delete m_players[0];
-            m_players.erase(m_players.begin()+i);
-        }
-    }
     
 //
-//    setGameStatText("Game will end in a few seconds");
+    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: X $$: "+ to_string(getPeach()->getCoins()) + " VOR | Time: " + to_string(timeRemaining()) + " | Bank: 9 | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: 1 $$: " + to_string(getYoshi()->getCoins()) );
 //
     // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
     if (timeRemaining() <= 0){
@@ -139,26 +129,13 @@ void StudentWorld::cleanUp()
     }
     m_actors.clear();
     
-    for(int i = 0; i < m_players.size(); i++) {
-        if(m_players[i]!=nullptr) {
-            //std::cerr<<"size: " << m_actors.size() << "i" << i<< std::endl;
-            delete m_players[i];
-        }
-    }
-    m_players.clear();
+    delete m_yoshi;
+    delete m_peach;
 }
 
 StudentWorld::~StudentWorld(){
     cleanUp();
 }
 
-std::vector<PlayerAvatar*> StudentWorld::overlappingPlayers(Actor* a) {
-    std::vector<PlayerAvatar*> v;
-    for(int i = 0; i < m_players.size(); i++) {
-        if(a->getX()==m_players[i]->getX() && a->getY()==m_players[i]->getY() ) {
-            v.push_back(m_players[i]);
-        }
-    }
-    return v;
-}
+
 

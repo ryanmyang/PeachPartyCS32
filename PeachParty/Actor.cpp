@@ -16,9 +16,22 @@ StudentWorld* Actor::getWorld() {return m_world;}
 
 // ---------------------- Activator ----------------------
 Activator::Activator(StudentWorld* w, int img, int initX, int initY, int dir, int depth):Actor(w, img, initX, initY, dir, depth) {
+    m_peach = w->getPeach();
+    m_yoshi = w->getYoshi();
+}
+
+void Activator::doSomething() {
     
 }
 
+void Activator::affectBothPlayers() {
+    if(m_peach->getX() == getX() && m_peach->getY() == getY()) {
+        affectPlayer(m_peach);
+    }
+    if(m_yoshi->getX() == getX() && m_yoshi->getY() == getY()) {
+        affectPlayer(m_yoshi);
+    }
+}
 // ---------------------- CoinSquare ----------------------
 CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Activator(w, grants?IID_BLUE_COIN_SQUARE:IID_RED_COIN_SQUARE, initX, initY, right, 1),Actor(w, grants?IID_BLUE_COIN_SQUARE:IID_RED_COIN_SQUARE, initX, initY, right, 1){
     m_grantsCoins = grants;
@@ -26,8 +39,17 @@ CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Activ
 
 void CoinSquare::doSomething() {
     if (!isAlive()) return;
+    affectBothPlayers();
     
-    
+}
+
+void CoinSquare::affectPlayer(PlayerAvatar * p) {
+    // Exit if not new, or if not stopped
+    if( (p->getLastX() == getX() && p->getLastY() == getY()) || p->getTicks()!=0) {
+        return;
+    }
+    p->addCoins( m_grantsCoins?3:-3);
+    getWorld()->playSound(m_grantsCoins?SOUND_GIVE_COIN:SOUND_TAKE_COIN);
 }
 
 // ---------------------- MovingActor ----------------------
@@ -65,6 +87,8 @@ PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):M
 
 
 void PlayerAvatar::doSomething(){
+    m_lastX = getX();
+    m_lastY = getY();
     std::cerr << "playerdoing: " << m_playerNum << "empty?:" << nextTileEmpty(getMoveDir())<< "movedir: "<< getMoveDir() << std::endl;
 //    std::cerr << "doSomething()" << std::endl;
     

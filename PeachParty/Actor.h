@@ -23,15 +23,22 @@ class Actor : public GraphObject {
 class PlayerAvatar;
 class Activator : virtual public Actor {
 public:
+    virtual void doSomething();
     Activator(StudentWorld* w, int img, int initX, int initY, int dir=right, int depth=0);
-    PlayerAvatar* playersHere();
-    void doPlayer(PlayerAvatar*);
+    virtual void affectPlayer(PlayerAvatar* p) = 0;
+    void affectBothPlayers();
+private:
+    PlayerAvatar* m_peach;
+    PlayerAvatar* m_yoshi;
+    
+
 };
 
 class CoinSquare : public Activator {
-    public:
-        virtual void doSomething();
-        CoinSquare(StudentWorld* w, bool grants, int initX, int initY);
+public:
+    virtual void doSomething();
+    virtual void affectPlayer(PlayerAvatar* p);
+    CoinSquare(StudentWorld* w, bool grants, int initX, int initY);
     private:
         bool m_grantsCoins;
         
@@ -62,6 +69,8 @@ public:
     void addVortex(Actor* v) {m_vortex = v;}
     int getPlayerNum() {return m_playerNum;}
     Actor* getVortex() {return m_vortex;}
+    int getLastX() {return m_lastX;}
+    int getLastY() {return m_lastY;}
     
 private:
     int m_coins;
@@ -69,6 +78,8 @@ private:
     Actor* m_vortex;
     bool m_waitingToRoll;
     int m_playerNum;
+    int m_lastX;
+    int m_lastY;
 };
 
 #endif // ACTOR_H_
