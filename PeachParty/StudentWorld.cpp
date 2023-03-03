@@ -67,7 +67,7 @@ int StudentWorld::init()
                     
                     break;
                 case Board::star_square:
-                    
+                    m_actors.push_back(new StarSquare(this, i, j));
                     break;
                 case Board::bowser:
                     
@@ -107,8 +107,8 @@ int StudentWorld::move()
     m_yoshi->doSomething();
     
     
-//
-    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: X $$: "+ to_string(getPeach()->getCoins()) + " VOR | Time: " + to_string(timeRemaining()) + " | Bank: 9 | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: 1 $$: " + to_string(getYoshi()->getCoins()) );
+// Status Text
+    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: " + to_string(getPeach()->getStars()) + " $$: "+ to_string(getPeach()->getCoins()) + " VOR | Time: " + to_string(timeRemaining()) + " | Bank: 9 | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: " + to_string(getYoshi()->getStars()) + " $$: " + to_string(getYoshi()->getCoins()) );
 //
     // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
     if (timeRemaining() <= 0){
@@ -128,9 +128,14 @@ void StudentWorld::cleanUp()
         }
     }
     m_actors.clear();
-    
-    delete m_yoshi;
-    delete m_peach;
+    if (m_yoshi!=nullptr) {
+        delete m_yoshi;
+        m_yoshi = nullptr;
+    }
+    if(m_peach!=nullptr) {
+        delete m_peach;
+        m_peach = nullptr;
+    }
 }
 
 StudentWorld::~StudentWorld(){

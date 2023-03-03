@@ -44,6 +44,16 @@ public:
         
 };
 
+class StarSquare : public Activator {
+public:
+    virtual void doSomething();
+    virtual void affectPlayer(PlayerAvatar* p);
+    StarSquare(StudentWorld* w, int initX, int initY);
+    private:
+    
+        
+};
+
 class MovingActor : virtual public Actor {
 public:
     MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir = 0);
@@ -51,7 +61,7 @@ public:
     void setTicks(int t){m_ticks_to_move = t;}
     void setMoveDir(int d) {m_moveDir = d;}
     int getMoveDir() {return m_moveDir;}
-    bool nextTileEmpty(int moveDir);
+    int nextTileEmpty(int moveDir);
     
 private:
     int m_ticks_to_move;
