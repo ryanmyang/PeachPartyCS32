@@ -22,6 +22,7 @@ class StudentWorld : public GameWorld
     int getBank() {return m_bankBal;}
     void addBank(int c) {m_bankBal+=c;}
     void resetBank() {m_bankBal = 0;}
+    Board::GridEntry getSquare(int x, int y) {return m_board->getContentsOf(x,y);}
 
 private:
     std::vector<Actor*> m_actors;

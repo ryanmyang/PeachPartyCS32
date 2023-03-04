@@ -13,6 +13,7 @@ class Actor : public GraphObject {
         Actor(StudentWorld* w, int img, int initX, int initY, int dir = right, int depth = 0, double size = 1.0);
         bool isAlive();
         void kill();
+    virtual bool activates() {return false;}
         StudentWorld* getWorld();
     private:
         bool m_alive;
@@ -23,10 +24,12 @@ class Actor : public GraphObject {
 class PlayerAvatar;
 class Activator : virtual public Actor {
 public:
+    virtual bool activates() {return true;}
     virtual void doSomething();
     Activator(StudentWorld* w, int img, int initX, int initY, int dir=right, int depth=0);
     virtual void affectPlayer(PlayerAvatar* p) = 0;
     void affectBothPlayers();
+    void initPlayers();
 private:
     PlayerAvatar* m_peach;
     PlayerAvatar* m_yoshi;
@@ -60,6 +63,15 @@ public:
     private:
 };
 
+class DirectionSquare : public Activator {
+public:
+    virtual void doSomething();
+    virtual void affectPlayer(PlayerAvatar* p);
+    DirectionSquare(StudentWorld* w, int dir, int initX, int initY);
+private:
+    int m_dir;
+};
+
 class MovingActor : virtual public Actor {
 public:
     MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir = 0);
@@ -87,6 +99,8 @@ public:
     Actor* getVortex() {return m_vortex;}
     int getLastX() {return m_lastX;}
     int getLastY() {return m_lastY;}
+    bool forcedDir() {return m_forcedDir;}
+    void forceDir() {m_forcedDir = true;}
     
 private:
     int m_coins;
@@ -96,6 +110,7 @@ private:
     int m_playerNum;
     int m_lastX;
     int m_lastY;
+    bool m_forcedDir;
 };
 
 #endif // ACTOR_H_

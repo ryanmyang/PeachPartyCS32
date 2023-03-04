@@ -16,8 +16,13 @@ StudentWorld* Actor::getWorld() {return m_world;}
 
 // ---------------------- Activator ----------------------
 Activator::Activator(StudentWorld* w, int img, int initX, int initY, int dir, int depth):Actor(w, img, initX, initY, dir, depth) {
-    m_peach = w->getPeach();
-    m_yoshi = w->getYoshi();
+    std::cerr << "Activator constructor" << std::endl;
+    std::cerr << "Peach after cons: " << m_peach << std::endl;
+}
+
+void Activator::initPlayers() {
+    m_peach = getWorld()->getPeach();
+    m_yoshi = getWorld()->getYoshi();
 }
 
 void Activator::doSomething() {
@@ -25,6 +30,7 @@ void Activator::doSomething() {
 }
 
 void Activator::affectBothPlayers() {
+    std::cerr << "Peach: " << m_peach << std::endl;
     if(m_peach->getX() == getX() && m_peach->getY() == getY()) {
         affectPlayer(m_peach);
     }
@@ -99,6 +105,23 @@ void BankSquare::affectPlayer(PlayerAvatar * p) {
         getWorld()->playSound(SOUND_DEPOSIT_BANK);
     }
 }
+
+//---------------------- DirectionSquare ----------------------
+DirectionSquare::DirectionSquare(StudentWorld* w, int dir, int initX, int initY):Activator(w, IID_DIR_SQUARE, initX, initY, right, 1),Actor(w, IID_DIR_SQUARE, initX, initY, dir, 1){
+    m_dir = dir;
+}
+
+void DirectionSquare::doSomething() {
+   affectBothPlayers();
+}
+
+void DirectionSquare::affectPlayer(PlayerAvatar * p) {
+   //std::cout << "Player stepping on bank: " << p->getPlayerNum() << std::endl;
+   // Exit if not new
+    p->setMoveDir(m_dir);
+   
+}
+
 
 // ---------------------- MovingActor ----------------------
 MovingActor::MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir):Actor(w, img, initX, initY) {
@@ -183,7 +206,7 @@ void PlayerAvatar::doSomething(){
     }
     //std::cout << "numpaths: " << numPaths << std::endl;
     // IF AT FORK, attempt to change direction based on input
-    if (numPaths >2) {
+    if (numPaths >2 && getWorld()->getSquare(getX(), getY()) != Board::up_dir_square ) {
         //std::cout << "NUMPATHS OVER 2" << std::endl;
         int action = getWorld()->getAction(m_playerNum);
         switch (action) {

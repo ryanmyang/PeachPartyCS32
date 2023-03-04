@@ -38,32 +38,31 @@ int StudentWorld::init()
     for(int i = 0; i <=BOARD_WIDTH; i++) {
         for (int j = 0; j <=BOARD_HEIGHT; j++) {
             switch (m_board->getContentsOf(i, j)) {
+                case Board::player:
+                    m_peach = new PlayerAvatar(this,true,i,j);
+                    m_yoshi = new PlayerAvatar(this,false,i,j);
+                    std::cerr << "Players init" << std::endl;
+                    m_actors.push_back(new CoinSquare(this, true, i, j));
+                    break;
                 case Board::blue_coin_square:
                     m_actors.push_back(new CoinSquare(this, true, i, j));
                     break;
                 case Board::red_coin_square:
                     m_actors.push_back(new CoinSquare(this, false, i, j));
                     break;
-                case Board::player:
-                    m_peach = new PlayerAvatar(this,true,i,j);
-                    m_yoshi = new PlayerAvatar(this,false,i,j);
-                    m_actors.push_back(new CoinSquare(this, true, i, j));
-                    
-                    break;
                 case Board::empty:
-                    
                     break;
                 case Board::up_dir_square:
-                        
+                    m_actors.push_back(new DirectionSquare(this, 90, i, j));
                     break;
                 case Board::down_dir_square:
-                        
+                    m_actors.push_back(new DirectionSquare(this, 270, i, j));
                     break;
                 case Board::left_dir_square:
-                    
+                    m_actors.push_back(new DirectionSquare(this, 180, i, j));
                     break;
                 case Board::right_dir_square:
-                    
+                    m_actors.push_back(new DirectionSquare(this, 0, i, j));
                     break;
                 case Board::event_square:
                     
@@ -81,6 +80,11 @@ int StudentWorld::init()
                     
                     break;
             }
+        }
+    }
+    for(int i = 0; i < m_actors.size(); i++) {
+        if(m_actors[i]->activates()) {
+            dynamic_cast<Activator*>(m_actors[i])->initPlayers();
         }
     }
     
@@ -154,6 +158,8 @@ void StudentWorld::cleanUp()
         m_peach = nullptr;
     }
 }
+
+
 
 StudentWorld::~StudentWorld(){
     cleanUp();
