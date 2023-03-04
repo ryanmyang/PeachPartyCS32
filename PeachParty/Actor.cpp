@@ -30,7 +30,7 @@ void Activator::doSomething() {
 }
 
 void Activator::affectBothPlayers() {
-    std::cerr << "Peach: " << m_peach << std::endl;
+//    std::cerr << "Peach: " << m_peach << std::endl;
     if(m_peach->getX() == getX() && m_peach->getY() == getY()) {
         affectPlayer(m_peach);
     }
@@ -206,8 +206,11 @@ void PlayerAvatar::doSomething(){
     }
     //std::cout << "numpaths: " << numPaths << std::endl;
     // IF AT FORK, attempt to change direction based on input
-    if (numPaths >2 && getWorld()->getSquare(getX(), getY()) != Board::up_dir_square ) {
-        //std::cout << "NUMPATHS OVER 2" << std::endl;
+    Board::GridEntry currentSquare = getWorld()->getSquare(getX()/16, getY()/16);
+    if (numPaths >2 && currentSquare != Board::down_dir_square && currentSquare != Board::left_dir_square && currentSquare != Board::right_dir_square && currentSquare != Board::up_dir_square ) {
+        //std::cerr << "X: " <<getX() << ", Y: " << getY() << std::endl;
+        
+        //std::cerr << "NUMPATHS OVER 2" << std::endl;
         int action = getWorld()->getAction(m_playerNum);
         switch (action) {
             case ACTION_UP:
