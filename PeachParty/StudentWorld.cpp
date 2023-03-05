@@ -103,11 +103,22 @@ void StudentWorld::addDroppingSquare(int x, int y) {
         if (a->getX() == x && a->getY() == y && a->dropReplace()) {
             //replace this with dropping square
             std::cerr << "deleting something" << std::endl;
-            delete a;
-            m_actors[i] = (new DroppingSquare(this, x/16, y/16));
-            dynamic_cast<DroppingSquare*>(m_actors[i])->initPlayers();
+            a->kill();
+            Actor* d = new DroppingSquare(this, x/16, y/16);
+            m_actors.push_back(d);
+            dynamic_cast<DroppingSquare*>(d)->initPlayers();
         }
     }
+}
+
+Actor* StudentWorld::returnOneImpactable(int x, int y) {
+    for(int i = 0; i < m_actors.size(); i++) {
+        Actor* a = m_actors[i];
+        if(a->isAlive() && a->impactable() && ( abs(x-a->getX()) < SPRITE_WIDTH && abs(y-a->getY()) < SPRITE_HEIGHT) ) {
+            return m_actors[i];
+        }
+    }
+    return nullptr;
 }
 
 int StudentWorld::move()
@@ -126,7 +137,7 @@ int StudentWorld::move()
     // Erase Dead Actors
     for(int i = 0; i < m_actors.size(); i++) {
         if(!m_actors[i]->isAlive()) {
-            delete m_actors[0];
+            delete m_actors[i];
             m_actors.erase(m_actors.begin()+i);
         }
     }
@@ -135,7 +146,7 @@ int StudentWorld::move()
     
     
 // Status Text
-    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: " + to_string(getPeach()->getStars()) + " $$: "+ to_string(getPeach()->getCoins()) + " VOR | Time: " + to_string(timeRemaining()) + " | Bank: " + to_string(getBank()) + " | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: " + to_string(getYoshi()->getStars()) + " $$: " + to_string(getYoshi()->getCoins()) );
+    setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: " + to_string(getPeach()->getStars()) + " $$: "+ to_string(getPeach()->getCoins()) + " " + ((getPeach()->hasVortex())?"VOR ":"") + "| Time: " + to_string(timeRemaining()) + " | Bank: " + to_string(getBank()) + " | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: " + to_string(getYoshi()->getStars()) + " $$: " + to_string(getYoshi()->getCoins()) +" " + ((getYoshi()->hasVortex())?"VOR":""));
 //
     // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
     if (timeRemaining() <= 0){

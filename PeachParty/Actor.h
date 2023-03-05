@@ -8,14 +8,16 @@
 class StudentWorld;
 
 class Actor : public GraphObject {
-    public:
-        virtual void doSomething() = 0;
-        Actor(StudentWorld* w, int img, int initX, int initY, int dir = right, int depth = 0, double size = 1.0);
-        bool isAlive();
-        void kill();
+public:
+    virtual void doSomething() = 0;
+    Actor(StudentWorld* w, int img, int initX, int initY, int dir = right, int depth = 0, double size = 1.0);
+    bool isAlive();
+    void kill();
     virtual bool dropReplace() {return false;}
     virtual bool activates() {return false;}
-        StudentWorld* getWorld();
+    StudentWorld* getWorld();
+    virtual bool impactable() {return false;}
+    virtual void impact() {}
     private:
         bool m_alive;
         StudentWorld* m_world;
@@ -114,6 +116,8 @@ public:
     Baddie(StudentWorld* w, int img, int initX, int initY, int maxWander, int dir=right);
     virtual void doSomething();
     virtual void stopFunc() = 0;
+    virtual bool impactable() {return true;}
+    virtual void impact();
 
     
 private:
@@ -128,17 +132,31 @@ public:
     Boo(StudentWorld* w, int initX, int initY);
     virtual void stopFunc(){}
     virtual void affectPlayer(PlayerAvatar* p);
+
 private:
     
 };
 
-// BOWSWER
+// BOWSER
 class Bowser: public Baddie {
 public:
     Bowser(StudentWorld* w, int initX, int initY);
     virtual void stopFunc();
     virtual void affectPlayer(PlayerAvatar* p);
+
 private:
+    
+};
+
+// VORTEX
+
+class Vortex : public Actor {
+public:
+    Vortex(StudentWorld* w, int initX, int initY, int moveDir);
+    virtual void doSomething();
+
+private:
+    int m_moveDir;
     
 };
 
@@ -150,11 +168,11 @@ public:
     void addCoins(int c) {m_coins+=c;}
     void setCoins(int c) {m_coins=c;}
     int getStars() {return m_stars;}
+    void giveVortex() {m_hasVortex = true;}
+    bool hasVortex() {return m_hasVortex;}
     void addStars(int s) {m_stars+=s;}
     void setStars(int s) {m_stars=s;}
-    void addVortex(Actor* v) {m_vortex = v;}
     int getPlayerNum() {return m_playerNum;}
-    Actor* getVortex() {return m_vortex;}
     int getLastX() {return m_lastX;}
     int getLastY() {return m_lastY;}
     bool forcedDir() {return m_forcedDir;}
@@ -165,12 +183,12 @@ public:
 private:
     int m_coins;
     int m_stars;
-    Actor* m_vortex;
     bool m_waitingToRoll;
     int m_playerNum;
     int m_lastX;
     int m_lastY;
     bool m_forcedDir;
+    bool m_hasVortex;
 
 };
 

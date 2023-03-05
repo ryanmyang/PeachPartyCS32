@@ -25,6 +25,8 @@ class StudentWorld : public GameWorld
     Board::GridEntry getSquare(int x, int y) {return m_board->getContentsOf(x,y);}
     void setRandomValidLoc(int &x, int&y);
     void addDroppingSquare(int x, int y);
+    Actor* returnOneImpactable(int x, int y);
+    void addActor(Actor* a) {m_actors.push_back(a);}
 
 private:
     std::vector<Actor*> m_actors;

@@ -136,7 +136,7 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
         return;
     }
 //    std::cerr << "invoking event square!" << std::endl;
-    switch( randInt(0,2) ) {
+    switch( randInt(2,2) ) {
         case 0:
             p->randomTP();
             getWorld()->playSound(SOUND_PLAYER_TELEPORT);
@@ -147,7 +147,7 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
             break;
         case 2:
             std::cerr << "Player " << std::to_string(p->getPlayerNum()) << " got a vortex!" << std::endl;
-            getWorld()->playSound(SOUND_GIVE_VORTEX);
+            p->giveVortex();
             break;
     }
 }
@@ -245,6 +245,14 @@ Baddie::Baddie(StudentWorld* w, int img, int initX, int initY, int maxWander, in
     m_pauseCount = 180;
     m_isPaused = true;
     m_maxWander = maxWander;
+}
+
+void Baddie::impact() {
+    randomTP();
+    setMoveDir(0);
+    setDirection(0);
+    m_isPaused = true;
+    m_pauseCount = 180;
 }
 
 // Mostly identical doSomething() function for both baddies
@@ -356,11 +364,34 @@ void Bowser::stopFunc() {
     }
 }
 
+// ---------------------- VORTEX ----------------------
+Vortex::Vortex(StudentWorld* w, int initX, int initY, int moveDir):Actor(w, IID_VORTEX, initX, initY, 0, 0) {
+    m_moveDir = moveDir;
+}
+
+void Vortex::doSomething() {
+    // Exit if dead
+    if(!isAlive()) {return;}
+    // Move
+    moveAtAngle(m_moveDir, 2);
+    // Kill if leaves board
+    if(getX() < 0 || getX() >= VIEW_WIDTH || getY() >= VIEW_HEIGHT || getY() < 0) {
+        kill();
+    }
+    Actor* target = getWorld()->returnOneImpactable(getX(), getY());
+    if(target) {
+        target->impact();
+        kill();
+        getWorld()->playSound(SOUND_HIT_BY_VORTEX);
+    }
+    
+}
+
 // ---------------------- PlayerAvatar ----------------------
 PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):MovingActor(w, isPeach?IID_PEACH:IID_YOSHI, initX, initY),Actor(w, isPeach?IID_PEACH:IID_YOSHI, initX, initY) {
     m_coins = 0;
     m_stars = 0;
-    m_vortex = nullptr;
+    m_hasVortex = false;
     m_waitingToRoll = true;
     m_playerNum = isPeach?1:2;
     m_lastX = initX*16;
@@ -401,8 +432,6 @@ void PlayerAvatar::swap() {
     m_waitingToRoll = other->m_waitingToRoll;
     other->m_waitingToRoll = tempWait;
     
-    m_lastX = getX();
-    m_lastY = getY();
     other->m_lastX = other->getX();
     other->m_lastY = other->getY();
     
@@ -439,8 +468,11 @@ void PlayerAvatar::doSomething(){
             m_waitingToRoll = false;
         }
 //[]    d) Action fire
-        else if(action == ACTION_FIRE) {
-            
+        else if(action == ACTION_FIRE && m_hasVortex) {
+            Actor* v = new Vortex(getWorld(), getX()/16, getY()/16, getMoveDir());
+            m_hasVortex = false;
+            getWorld()->addActor(v);
+            getWorld()->playSound(SOUND_GIVE_VORTEX);
         }
         else { return; }
     }
