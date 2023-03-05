@@ -24,6 +24,7 @@ class StudentWorld : public GameWorld
     void resetBank() {m_bankBal = 0;}
     Board::GridEntry getSquare(int x, int y) {return m_board->getContentsOf(x,y);}
     void setRandomValidLoc(int &x, int&y);
+    void addDroppingSquare(int x, int y);
 
 private:
     std::vector<Actor*> m_actors;

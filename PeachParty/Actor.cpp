@@ -152,6 +152,34 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
     }
 }
 
+// ---------------------- DroppingSquare ----------------------
+DroppingSquare::DroppingSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_DROPPING_SQUARE, initX, initY, right, 1),Actor(w, IID_DROPPING_SQUARE, initX, initY, right, 1){
+    
+}
+
+void DroppingSquare::doSomething() {
+    affectBothPlayers();
+}
+
+void DroppingSquare::affectPlayer(PlayerAvatar * p) {
+    // Exit if not new
+    if( (p->getLastX() == getX() && p->getLastY() == getY()) || p->getTicks()!=0) {
+        return;
+    }
+    switch(randInt(0, 1)) {
+        case 1:
+            if (p->getCoins()-10<0) {
+                p->setCoins(0);
+            } else {p->addCoins(-10);}
+            break;
+        case 2:
+            if (p->getStars()>0) {
+                p->setStars(p->getStars()-1);
+            }
+    }
+    getWorld()->playSound(SOUND_DROPPING_SQUARE_ACTIVATE);
+    
+}
 
 // ---------------------- MovingActor ----------------------
 MovingActor::MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir):Actor(w, img, initX, initY) {
@@ -323,7 +351,7 @@ void Bowser::affectPlayer(PlayerAvatar* p) {
 
 void Bowser::stopFunc() {
     if(randInt(0, 3)==0) {
-        
+        getWorld()->addDroppingSquare(getX(), getY());
         getWorld()->playSound(SOUND_DROPPING_SQUARE_CREATED);
     }
 }

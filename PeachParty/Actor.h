@@ -13,6 +13,7 @@ class Actor : public GraphObject {
         Actor(StudentWorld* w, int img, int initX, int initY, int dir = right, int depth = 0, double size = 1.0);
         bool isAlive();
         void kill();
+    virtual bool dropReplace() {return false;}
     virtual bool activates() {return false;}
         StudentWorld* getWorld();
     private:
@@ -42,6 +43,7 @@ public:
     virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     CoinSquare(StudentWorld* w, bool grants, int initX, int initY);
+    virtual bool dropReplace() {return true;}
     private:
         bool m_grantsCoins;
         
@@ -52,7 +54,7 @@ public:
     virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     StarSquare(StudentWorld* w, int initX, int initY);
-    private:
+    virtual bool dropReplace() {return true;}
 };
 
 class BankSquare : public Activator {
@@ -60,7 +62,7 @@ public:
     virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     BankSquare(StudentWorld* w, int initX, int initY);
-    private:
+    virtual bool dropReplace() {return true;}
 };
 
 class DirectionSquare : public Activator {
@@ -68,6 +70,7 @@ public:
     virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     DirectionSquare(StudentWorld* w, int dir, int initX, int initY);
+    virtual bool dropReplace() {return true;}
 private:
     int m_dir;
 };
@@ -77,7 +80,15 @@ public:
     virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     EventSquare(StudentWorld* w, int initX, int initY);
-    private:
+    virtual bool dropReplace() {return true;}
+};
+
+class DroppingSquare : public Activator {
+public:
+    virtual void doSomething();
+    virtual void affectPlayer(PlayerAvatar* p);
+    DroppingSquare(StudentWorld* w, int initX, int initY);
+        
 };
 
 class MovingActor : virtual public Actor {

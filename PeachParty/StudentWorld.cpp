@@ -96,6 +96,20 @@ int StudentWorld::init()
     return GWSTATUS_CONTINUE_GAME;
 }
 
+void StudentWorld::addDroppingSquare(int x, int y) {
+    for(int i = 0; i < m_actors.size(); i++) {
+        Actor* a = m_actors[i];
+        // if actor xy matches bowser
+        if (a->getX() == x && a->getY() == y && a->dropReplace()) {
+            //replace this with dropping square
+            std::cerr << "deleting something" << std::endl;
+            delete a;
+            m_actors[i] = (new DroppingSquare(this, x/16, y/16));
+            dynamic_cast<DroppingSquare*>(m_actors[i])->initPlayers();
+        }
+    }
+}
+
 int StudentWorld::move()
 {
     // This code is here merely to allow the game to build, run, and terminate after you hit ESC.
