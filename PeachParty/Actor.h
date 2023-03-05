@@ -72,6 +72,14 @@ private:
     int m_dir;
 };
 
+class EventSquare : public Activator {
+public:
+    virtual void doSomething();
+    virtual void affectPlayer(PlayerAvatar* p);
+    EventSquare(StudentWorld* w, int initX, int initY);
+    private:
+};
+
 class MovingActor : virtual public Actor {
 public:
     MovingActor(StudentWorld* w, int img, int initX, int initY, int moveDir = 0);
@@ -101,6 +109,8 @@ public:
     int getLastY() {return m_lastY;}
     bool forcedDir() {return m_forcedDir;}
     void forceDir() {m_forcedDir = true;}
+    void randomTP();
+    void swap();
     
 private:
     int m_coins;
@@ -111,6 +121,7 @@ private:
     int m_lastX;
     int m_lastY;
     bool m_forcedDir;
+
 };
 
 #endif // ACTOR_H_

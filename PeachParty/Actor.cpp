@@ -16,8 +16,8 @@ StudentWorld* Actor::getWorld() {return m_world;}
 
 // ---------------------- Activator ----------------------
 Activator::Activator(StudentWorld* w, int img, int initX, int initY, int dir, int depth):Actor(w, img, initX, initY, dir, depth) {
-    std::cerr << "Activator constructor" << std::endl;
-    std::cerr << "Peach after cons: " << m_peach << std::endl;
+//    std::cerr << "Activator constructor" << std::endl;
+//    std::cerr << "Peach after cons: " << m_peach << std::endl;
 }
 
 void Activator::initPlayers() {
@@ -88,7 +88,7 @@ void BankSquare::doSomething() {
 }
 
 void BankSquare::affectPlayer(PlayerAvatar * p) {
-    std::cout << "Player stepping on bank: " << p->getPlayerNum() << std::endl;
+//    std::cout << "Player stepping on bank: " << p->getPlayerNum() << std::endl;
     // Exit if not new
     if( (p->getLastX() == getX() && p->getLastY() == getY()) ) {return;}
     
@@ -116,10 +116,40 @@ void DirectionSquare::doSomething() {
 }
 
 void DirectionSquare::affectPlayer(PlayerAvatar * p) {
-   //std::cout << "Player stepping on bank: " << p->getPlayerNum() << std::endl;
    // Exit if not new
     p->setMoveDir(m_dir);
+    if(m_dir == 180) {p->setDirection(180);}
    
+}
+// ---------------------- EventSquare ----------------------
+EventSquare::EventSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_EVENT_SQUARE, initX, initY, right, 1),Actor(w, IID_EVENT_SQUARE, initX, initY, right, 1){
+    
+}
+
+void EventSquare::doSomething() {
+    affectBothPlayers();
+}
+
+void EventSquare::affectPlayer(PlayerAvatar * p) {
+    // Exit if not new or not landed
+    if( ( p->getLastX() == getX() && p->getLastY() == getY() ) || p->getTicks() != 0) {
+        return;
+    }
+//    std::cerr << "invoking event square!" << std::endl;
+    switch( 0 ) {
+        case 0:
+            p->randomTP();
+            getWorld()->playSound(SOUND_PLAYER_TELEPORT);
+            break;
+//        case 1:
+//            p->swap();
+//            getWorld()->playSound(SOUND_PLAYER_TELEPORT);
+//            break;
+//        case 2:
+//            std::cerr << "Player " << std::to_string(p->getPlayerNum()) << " got a vortex!" << std::endl;
+//            getWorld()->playSound(SOUND_GIVE_VORTEX);
+//            break;
+    }
 }
 
 
@@ -152,9 +182,58 @@ PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):M
     m_vortex = nullptr;
     m_waitingToRoll = true;
     m_playerNum = isPeach?1:2;
+    m_lastX = initX*16;
+    m_lastY = initY*16;
 }
 
 
+
+void PlayerAvatar::swap() {
+    std::cerr << "swap" << std::endl;
+    PlayerAvatar* other = getPlayerNum()==1?getWorld()->getYoshi():getWorld()->getPeach();
+    std::cerr << getPlayerNum() << other->getPlayerNum() << std::endl;
+    
+    
+    int tempx = other->getX();
+    int tempy = other->getY();
+    other->moveTo(getX(), getY());
+    
+    moveTo(tempx,tempy);
+    
+    // Swap ticks
+    int tempTicks = getTicks();
+    setTicks(other->getTicks());
+    other->setTicks(tempTicks);
+    
+    // Swap movedir
+    int tempMove = getMoveDir();
+    setMoveDir(other->getMoveDir());
+    other->setMoveDir(tempMove);
+    
+    // Swap direction
+    int tempDir = getDirection();
+    setDirection(other->getDirection());
+    other->setDirection(tempDir);
+
+    //Swap waiting
+    bool tempWait = m_waitingToRoll;
+    m_waitingToRoll = other->m_waitingToRoll;
+    other->m_waitingToRoll = tempWait;
+    
+    m_lastX = getX();
+    m_lastY = getY();
+    other->m_lastX = other->getX();
+    other->m_lastY = other->getY();
+    
+    
+}
+
+void PlayerAvatar::randomTP() {
+//    std::cerr << "randomtp" << std::endl;
+    int x = 0; int y = 0;
+    getWorld()->setRandomValidLoc(x, y);
+    moveTo(x*16, y*16);
+}
 
 void PlayerAvatar::doSomething(){
     m_lastX = getX();

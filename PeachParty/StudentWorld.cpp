@@ -14,6 +14,8 @@ StudentWorld::StudentWorld(string assetPath)
 : GameWorld(assetPath)
 {
     m_bankBal = 0;
+    m_yoshi = nullptr;
+    m_peach = nullptr;
 }
 
 int StudentWorld::init()
@@ -65,7 +67,7 @@ int StudentWorld::init()
                     m_actors.push_back(new DirectionSquare(this, 0, i, j));
                     break;
                 case Board::event_square:
-                    
+                    m_actors.push_back(new EventSquare(this, i, j));
                     break;
                 case Board::bank_square:
                     m_actors.push_back(new BankSquare(this, i, j));
@@ -159,7 +161,13 @@ void StudentWorld::cleanUp()
     }
 }
 
-
+void StudentWorld::setRandomValidLoc(int &x, int&y) {
+    x=-1;y=-1;
+    while(m_board->getContentsOf(x, y)==Board::empty) {
+        x = 1+(rand()%16);
+        y = 1+(rand()%16);
+    }
+}
 
 StudentWorld::~StudentWorld(){
     cleanUp();
