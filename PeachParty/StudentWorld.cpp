@@ -76,10 +76,12 @@ int StudentWorld::init()
                     m_actors.push_back(new StarSquare(this, i, j));
                     break;
                 case Board::bowser:
-                    
+                    m_actors.push_back(new Bowser(this, i,j));
+                    m_actors.push_back(new CoinSquare(this, true, i, j));
                     break;
                 case Board::boo:
-                    
+                    m_actors.push_back(new Boo(this, i,j));
+                    m_actors.push_back(new CoinSquare(this, true, i, j));
                     break;
             }
         }

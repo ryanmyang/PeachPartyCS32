@@ -26,7 +26,7 @@ class Activator : virtual public Actor {
 public:
     virtual bool activates() {return true;}
     virtual void doSomething();
-    Activator(StudentWorld* w, int img, int initX, int initY, int dir=right, int depth=0);
+    Activator(StudentWorld* w, int img, int initX, int initY, int dir=right, int depth=1);
     virtual void affectPlayer(PlayerAvatar* p) = 0;
     void affectBothPlayers();
     void initPlayers();
@@ -88,10 +88,47 @@ public:
     void setMoveDir(int d) {m_moveDir = d;}
     int getMoveDir() {return m_moveDir;}
     int nextTileEmpty(int moveDir);
+    void adjustIfAtTurn();
+    void randomTP();
+
     
 private:
     int m_ticks_to_move;
     int m_moveDir = 0;
+};
+
+// BADDIE
+class Baddie : public MovingActor, public Activator {
+public:
+    Baddie(StudentWorld* w, int img, int initX, int initY, int maxWander, int dir=right);
+    virtual void doSomething();
+    virtual void stopFunc() = 0;
+
+    
+private:
+    int m_pauseCount;
+    bool m_isPaused;
+    int m_maxWander;
+};
+
+// BOO
+class Boo: public Baddie {
+public:
+    Boo(StudentWorld* w, int initX, int initY);
+    virtual void stopFunc(){}
+    virtual void affectPlayer(PlayerAvatar* p);
+private:
+    
+};
+
+// BOWSWER
+class Bowser: public Baddie {
+public:
+    Bowser(StudentWorld* w, int initX, int initY);
+    virtual void stopFunc();
+    virtual void affectPlayer(PlayerAvatar* p);
+private:
+    
 };
 
 class PlayerAvatar : public MovingActor {
@@ -100,8 +137,10 @@ public:
     virtual void doSomething();
     int getCoins() {return m_coins;}
     void addCoins(int c) {m_coins+=c;}
+    void setCoins(int c) {m_coins=c;}
     int getStars() {return m_stars;}
     void addStars(int s) {m_stars+=s;}
+    void setStars(int s) {m_stars=s;}
     void addVortex(Actor* v) {m_vortex = v;}
     int getPlayerNum() {return m_playerNum;}
     Actor* getVortex() {return m_vortex;}
@@ -109,8 +148,8 @@ public:
     int getLastY() {return m_lastY;}
     bool forcedDir() {return m_forcedDir;}
     void forceDir() {m_forcedDir = true;}
-    void randomTP();
     void swap();
+    bool isWaiting() {return m_waitingToRoll;}
     
 private:
     int m_coins;

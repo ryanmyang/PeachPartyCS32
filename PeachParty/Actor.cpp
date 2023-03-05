@@ -136,19 +136,19 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
         return;
     }
 //    std::cerr << "invoking event square!" << std::endl;
-    switch( 0 ) {
+    switch( randInt(0,2) ) {
         case 0:
             p->randomTP();
             getWorld()->playSound(SOUND_PLAYER_TELEPORT);
             break;
-//        case 1:
-//            p->swap();
-//            getWorld()->playSound(SOUND_PLAYER_TELEPORT);
-//            break;
-//        case 2:
-//            std::cerr << "Player " << std::to_string(p->getPlayerNum()) << " got a vortex!" << std::endl;
-//            getWorld()->playSound(SOUND_GIVE_VORTEX);
-//            break;
+        case 1:
+            p->swap();
+            getWorld()->playSound(SOUND_PLAYER_TELEPORT);
+            break;
+        case 2:
+            std::cerr << "Player " << std::to_string(p->getPlayerNum()) << " got a vortex!" << std::endl;
+            getWorld()->playSound(SOUND_GIVE_VORTEX);
+            break;
     }
 }
 
@@ -161,6 +161,7 @@ MovingActor::MovingActor(StudentWorld* w, int img, int initX, int initY, int mov
 
 // nextTileEmpty returns -1 if not on grid, 0 if not empty, 1 if empty
 int MovingActor::nextTileEmpty(int moveDir) {
+    if(moveDir%90!=0) {return -1;}
     if(getX()%16==0 && getY()%16==0){
         int xCopy = getX();
         int yCopy = getY();
@@ -173,6 +174,158 @@ int MovingActor::nextTileEmpty(int moveDir) {
         return nextTile==Board::empty?1:0;
     }
     return -1;
+}
+
+void MovingActor::adjustIfAtTurn() {
+    if(nextTileEmpty(getMoveDir())==1 && getMoveDir()%180==90) {
+        // Check Right
+        if(getWorld()->getBoard()->getContentsOf((getX()+SPRITE_WIDTH)/BOARD_WIDTH,getY()/BOARD_HEIGHT) != Board::empty) {
+            setDirection(0);
+            setMoveDir(0);
+        }
+        // Check Left
+        else if(getWorld()->getBoard()->getContentsOf((getX()-1)/BOARD_WIDTH,getY()/BOARD_HEIGHT) != Board::empty) {
+            setDirection(180);
+            setMoveDir(180);
+        }
+    }
+    
+    // If left or right, check up or down
+    else if(nextTileEmpty(getMoveDir())==1 && getMoveDir()%180==0) {
+        // Check up
+        if(getWorld()->getBoard()->getContentsOf(getX()/BOARD_WIDTH,(getY()+SPRITE_HEIGHT)/BOARD_HEIGHT) != Board::empty) {
+            setMoveDir(90);
+            setDirection(0);
+        }
+        // Check Down
+        else if(getWorld()->getBoard()->getContentsOf(getX()/BOARD_WIDTH,(getY()-1)/BOARD_HEIGHT) != Board::empty) {
+            setDirection(0);
+            setMoveDir(270);
+        }
+    }
+}
+
+void MovingActor::randomTP() {
+//    std::cerr << "randomtp" << std::endl;
+    int x = 0; int y = 0;
+    getWorld()->setRandomValidLoc(x, y);
+    moveTo(x*16, y*16);
+}
+
+// ---------------------- Baddie ----------------------
+Baddie::Baddie(StudentWorld* w, int img, int initX, int initY, int maxWander, int dir):Activator(w, img, initX, initY), MovingActor(w, img, initX, initY), Actor(w, img, initX, initY, right, 0) {
+    m_pauseCount = 180;
+    m_isPaused = true;
+    m_maxWander = maxWander;
+}
+
+// Mostly identical doSomething() function for both baddies
+void Baddie::doSomething() {
+    if(m_isPaused) {
+        affectBothPlayers();
+        
+        m_pauseCount--;
+        
+        // If end of pause aka pause is 0
+        if(m_pauseCount <= 0) {
+            
+            // Wander in random directin:
+            int squaresToMove = randInt(1, m_maxWander);
+            setTicks(squaresToMove * 8);
+            
+            // Choose random dir and change movedir
+            int newDir = -1;
+            while( nextTileEmpty(newDir)!=0) {
+                newDir = randInt(0, 3) * 90;
+            }
+            setMoveDir(newDir);
+            setDirection(newDir==left?180:0);
+            m_isPaused = false;
+        }
+    }
+    // else if walking
+    else {
+        // a If on square and at a fork
+        int numPaths = 0;
+        for (int d = 0; d < 360; d+=90) {
+            if(nextTileEmpty(d) == 0) numPaths++;
+        }
+        // nextTileEmpty will return -1 if not on square
+        if (numPaths > 2) {
+            // choose random dir and change
+            int newDir = -1;
+            while( nextTileEmpty(newDir)!=0) {
+                newDir = randInt(0, 3) * 90;
+            }
+            setMoveDir(newDir);
+            setDirection(newDir==left?180:0);
+        } else {
+            // b else if on square and can't move forward, at turn
+            adjustIfAtTurn();
+        }
+        
+        // cde move, decrement, state/counter updates
+        moveAtAngle(getMoveDir(), 2);
+        setTicks(getTicks()-1);
+        if(getTicks()==0) {
+            m_isPaused = true;
+            m_pauseCount = 180;
+            stopFunc();
+        }
+    }
+    
+    
+}
+
+// ---------------------- Boo ----------------------
+Boo::Boo(StudentWorld* w, int initX, int initY):Baddie(w, IID_BOO, initX, initY, 3),Actor(w, IID_BOO, initX, initY) {
+    
+}
+
+void Boo::affectPlayer(PlayerAvatar* p) {
+    if( (p->getLastY()==getY() && p->getLastX()==getX()) || !p->isWaiting()) {return;}
+    
+    PlayerAvatar* other = p->getPlayerNum()==1?getWorld()->getYoshi():getWorld()->getPeach();
+    switch(randInt(0, 1)) {
+        case 0:{
+            int temp = other->getCoins();
+            other->setCoins(p->getCoins());
+            p->setCoins(temp);
+            std::cerr << "coin swap" << std::endl;
+            break;}
+        case 1:{
+            int temp2 = other->getStars();
+            other->setStars(p->getStars());
+            p->setStars(temp2);
+            std::cerr << "star swap" << std::endl;
+            break;}
+    }
+    getWorld()->playSound(SOUND_BOO_ACTIVATE);
+    
+}
+
+// ---------------------- Bowser ----------------------
+Bowser::Bowser(StudentWorld* w, int initX, int initY):Baddie(w, IID_BOWSER, initX, initY, 10),Actor(w, IID_BOWSER, initX, initY) {
+    
+}
+
+void Bowser::affectPlayer(PlayerAvatar* p) {
+    if( (p->getLastY()==getY() && p->getLastX()==getX()) || !p->isWaiting()) {return;}
+    
+    switch(randInt(0, 1)) {
+        case 0:
+            p->setCoins(0);
+            getWorld()->playSound(SOUND_BOWSER_ACTIVATE);
+            break;
+    }
+    
+}
+
+void Bowser::stopFunc() {
+    if(randInt(0, 3)==0) {
+        
+        getWorld()->playSound(SOUND_DROPPING_SQUARE_CREATED);
+    }
 }
 
 // ---------------------- PlayerAvatar ----------------------
@@ -228,13 +381,6 @@ void PlayerAvatar::swap() {
     
 }
 
-void PlayerAvatar::randomTP() {
-//    std::cerr << "randomtp" << std::endl;
-    int x = 0; int y = 0;
-    getWorld()->setRandomValidLoc(x, y);
-    moveTo(x*16, y*16);
-}
-
 void PlayerAvatar::doSomething(){
     m_lastX = getX();
     m_lastY = getY();
@@ -245,9 +391,10 @@ void PlayerAvatar::doSomething(){
     if(m_waitingToRoll) {
         // a) Validate diraction
         int ogMD = getMoveDir();
+        
         // Adjust player if facing invalid/empty direction
         while( nextTileEmpty(getMoveDir())==1 && getMoveDir() !=ogMD) {
-            setMoveDir( (rand() % 4)*90 );
+            setMoveDir( randInt(0,3)*90 );
             if(getMoveDir()==left) {
                 setDirection(180);
             } else { setDirection(0);}
@@ -320,32 +467,7 @@ void PlayerAvatar::doSomething(){
 //      c) If can't continue in main direction
     //std::cerr << "nexttile: " <<xCopy/BOARD_WIDTH<<","<<yCopy/BOARD_HEIGHT << "empty?:" << (nextTile==Board::empty) << std::endl;
     // If up or down, try left or right
-    if(nextTileEmpty(getMoveDir())==1 && getMoveDir()%180==90) {
-        // Check Right
-        if(getWorld()->getBoard()->getContentsOf((getX()+SPRITE_WIDTH)/BOARD_WIDTH,getY()/BOARD_HEIGHT) != Board::empty) {
-            setDirection(0);
-            setMoveDir(0);
-        }
-        // Check Left
-        else if(getWorld()->getBoard()->getContentsOf((getX()-1)/BOARD_WIDTH,getY()/BOARD_HEIGHT) != Board::empty) {
-            setDirection(180);
-            setMoveDir(180);
-        }
-    }
-    
-    // If left or right, check up or down
-    else if(nextTileEmpty(getMoveDir())==1 && getMoveDir()%180==0) {
-        // Check up
-        if(getWorld()->getBoard()->getContentsOf(getX()/BOARD_WIDTH,(getY()+SPRITE_HEIGHT)/BOARD_HEIGHT) != Board::empty) {
-            setMoveDir(90);
-            setDirection(0);
-        }
-        // Check Down
-        else if(getWorld()->getBoard()->getContentsOf(getX()/BOARD_WIDTH,(getY()-1)/BOARD_HEIGHT) != Board::empty) {
-            setDirection(0);
-            setMoveDir(270);
-        }
-    }
+    adjustIfAtTurn();
 
 //      d-f Move and end movestate
     moveAtAngle(getMoveDir(), 2);
@@ -355,3 +477,5 @@ void PlayerAvatar::doSomething(){
     
 
 }
+
+
