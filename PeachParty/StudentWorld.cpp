@@ -193,8 +193,8 @@ void StudentWorld::cleanUp()
 void StudentWorld::setRandomValidLoc(int &x, int&y) {
     x=-1;y=-1;
     while(m_board->getContentsOf(x, y)==Board::empty) {
-        x = 1+(rand()%16);
-        y = 1+(rand()%16);
+        x = randInt(1, 16);
+        y = randInt(1, 16);
     }
 }
 
