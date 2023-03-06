@@ -104,7 +104,7 @@ void StudentWorld::addDroppingSquare(int x, int y) {
             //replace this with dropping square
             std::cerr << "deleting something" << std::endl;
             a->kill();
-            Actor* d = new DroppingSquare(this, x/16, y/16);
+            Actor* d = new DroppingSquare(this, x/SPRITE_WIDTH, y/SPRITE_HEIGHT);
             m_actors.push_back(d);
             dynamic_cast<DroppingSquare*>(d)->initPlayers();
         }
@@ -193,8 +193,8 @@ void StudentWorld::cleanUp()
 void StudentWorld::setRandomValidLoc(int &x, int&y) {
     x=-1;y=-1;
     while(m_board->getContentsOf(x, y)==Board::empty) {
-        x = randInt(1, 16);
-        y = randInt(1, 16);
+        x = randInt(1, BOARD_WIDTH);
+        y = randInt(1, BOARD_HEIGHT);
     }
 }
 

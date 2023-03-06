@@ -145,7 +145,7 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
         return;
     }
 //    std::cerr << "invoking event square!" << std::endl;
-    switch( randInt(2,2) ) {
+    switch( randInt(0,2) ) {
         case 0:
             p->randomTP();
             getWorld()->playSound(SOUND_PLAYER_TELEPORT);
@@ -199,7 +199,7 @@ MovingActor::MovingActor(StudentWorld* w, int img, int initX, int initY, int mov
 // nextTileEmpty returns -1 if not on grid, 0 if not empty, 1 if empty
 int MovingActor::nextTileEmpty(int moveDir) {
     if(moveDir%90!=0) {return -1;}
-    if(getX()%16==0 && getY()%16==0){
+    if(getX()%SPRITE_WIDTH==0 && getY()%SPRITE_HEIGHT==0){
         int xCopy = getX();
         int yCopy = getY();
         //std::cerr << std::endl << "dir: " << getMoveDir() << "pos: " << getX() << "," << getY() << std::endl;
@@ -246,7 +246,7 @@ void MovingActor::randomTP() {
 //    std::cerr << "randomtp" << std::endl;
     int x = 0; int y = 0;
     getWorld()->setRandomValidLoc(x, y);
-    moveTo(x*16, y*16);
+    moveTo(x*SPRITE_WIDTH, y*SPRITE_HEIGHT);
 }
 
 // ---------------------- Baddie ----------------------
@@ -411,8 +411,8 @@ PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):M
     m_hasVortex = false;
     m_waitingToRoll = true;
     m_playerNum = isPeach?1:2;
-    m_lastX = initX*16;
-    m_lastY = initY*16;
+    m_lastX = initX*SPRITE_WIDTH;
+    m_lastY = initY*SPRITE_HEIGHT;
 }
 
 
@@ -486,7 +486,7 @@ void PlayerAvatar::doSomething(){
         }
 //[]    d) Action fire
         else if(action == ACTION_FIRE && m_hasVortex) {
-            Actor* v = new Vortex(getWorld(), getX()/16, getY()/16, getMoveDir());
+            Actor* v = new Vortex(getWorld(), getX()/SPRITE_WIDTH, getY()/SPRITE_HEIGHT, getMoveDir());
             m_hasVortex = false;
             getWorld()->addActor(v);
             getWorld()->playSound(SOUND_GIVE_VORTEX);
@@ -510,7 +510,7 @@ void PlayerAvatar::doSomething(){
     }
     //std::cout << "numpaths: " << numPaths << std::endl;
     // IF AT FORK, attempt to change direction based on input
-    Board::GridEntry currentSquare = getWorld()->getSquare(getX()/16, getY()/16);
+    Board::GridEntry currentSquare = getWorld()->getSquare(getX()/SPRITE_WIDTH, getY()/SPRITE_HEIGHT);
     if (numPaths >2 && currentSquare != Board::down_dir_square && currentSquare != Board::left_dir_square && currentSquare != Board::right_dir_square && currentSquare != Board::up_dir_square ) {
         //std::cerr << "X: " <<getX() << ", Y: " << getY() << std::endl;
         
