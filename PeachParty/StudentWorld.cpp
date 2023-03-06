@@ -115,7 +115,7 @@ Actor* StudentWorld::returnOneImpactable(int x, int y) {
     for(int i = 0; i < m_actors.size(); i++) {
         Actor* a = m_actors[i];
         if(a->isAlive() && a->impactable() && ( abs(x-a->getX()) < SPRITE_WIDTH && abs(y-a->getY()) < SPRITE_HEIGHT) ) {
-            return m_actors[i];
+            return a;
         }
     }
     return nullptr;
@@ -151,16 +151,18 @@ int StudentWorld::move()
     // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
     if (timeRemaining() <= 0){
         PlayerAvatar* winner;
-        if ( m_peach->getStars() == m_yoshi->getStars() && m_peach->getCoins() == m_yoshi->getCoins() ) {
-            winner = 1+(rand()%2) == 1?m_yoshi:m_peach;
+        // If stars not equal, whoever has more stars wins
+        if ( m_peach->getStars() != m_yoshi->getStars() ) {
+            winner = m_peach->getStars()>m_yoshi->getStars()?m_peach:m_yoshi;
         }
-        else if(m_peach->getStars()>m_yoshi->getStars()) {
-            winner = m_peach;
-        } else if (m_peach->getCoins()>m_yoshi->getCoins()) {
-            winner = m_peach;
+        // If stars not equal, whoever has more stars wins
+        else if ( m_peach->getCoins() != m_yoshi->getCoins() )  {
+            winner = m_peach->getCoins()>m_yoshi->getCoins()?m_peach:m_yoshi;
         } else {
-            winner = m_yoshi;
+            winner = randInt(1, 2) == 1?m_yoshi:m_peach;
         }
+        
+        
         setFinalScore(winner->getStars(), winner->getCoins());
         return winner == m_peach?GWSTATUS_PEACH_WON:GWSTATUS_YOSHI_WON;
     }

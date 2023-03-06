@@ -44,16 +44,25 @@ CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Activ
 }
 
 void CoinSquare::doSomething() {
+//    std::cerr << "coinsquare do" << std::endl;
     if (!isAlive()) return;
+//    std::cerr << "coinsquare thru" << std::endl;
+
     affectBothPlayers();
     
 }
 
 void CoinSquare::affectPlayer(PlayerAvatar * p) {
+    std::cerr << "coinsquare affect" << std::endl;
+
     // Exit if not new, or if not stopped
     if( (p->getLastX() == getX() && p->getLastY() == getY()) || p->getTicks()!=0) {
+        std::cerr << "not new or not stopped" << p->getTicks() << std::endl;
         return;
     }
+    
+    std::cerr << "coin affect player " << p->getPlayerNum() << std::endl;
+
     p->addCoins( m_grantsCoins?3:-3);
     getWorld()->playSound(m_grantsCoins?SOUND_GIVE_COIN:SOUND_TAKE_COIN);
 }
@@ -378,11 +387,19 @@ void Vortex::doSomething() {
     if(getX() < 0 || getX() >= VIEW_WIDTH || getY() >= VIEW_HEIGHT || getY() < 0) {
         kill();
     }
+    
+    std::cerr << getWorld()->getPeach()->getTicks() << " Y:"<< getWorld()->getYoshi()->getTicks() << std::endl;
+
+    
     Actor* target = getWorld()->returnOneImpactable(getX(), getY());
     if(target) {
+        std::cerr << "vortex IMPACT ------------------- Ticks: ";
+        
         target->impact();
+
         kill();
         getWorld()->playSound(SOUND_HIT_BY_VORTEX);
+
     }
     
 }
@@ -473,6 +490,7 @@ void PlayerAvatar::doSomething(){
             m_hasVortex = false;
             getWorld()->addActor(v);
             getWorld()->playSound(SOUND_GIVE_VORTEX);
+            return;
         }
         else { return; }
     }
