@@ -123,10 +123,31 @@ Actor* StudentWorld::returnOneImpactable(int x, int y) {
 
 int StudentWorld::move()
 {
+    
+    // CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
+    if (timeRemaining() <= 0){
+        playSound(SOUND_GAME_FINISHED);
+        PlayerAvatar* winner;
+        // If stars not equal, whoever has more stars wins
+        if ( m_peach->getStars() != m_yoshi->getStars() ) {
+            winner = m_peach->getStars()>m_yoshi->getStars()?m_peach:m_yoshi;
+        }
+        // If stars not equal, whoever has more stars wins
+        else if ( m_peach->getCoins() != m_yoshi->getCoins() )  {
+            winner = m_peach->getCoins()>m_yoshi->getCoins()?m_peach:m_yoshi;
+        } else {
+            winner = randInt(1, 2) == 1?m_yoshi:m_peach;
+        }
+        
+        
+        setFinalScore(winner->getStars(), winner->getCoins());
+        return winner == m_peach?GWSTATUS_PEACH_WON:GWSTATUS_YOSHI_WON;
+    }
+    
     // This code is here merely to allow the game to build, run, and terminate after you hit ESC.
     // Notice that the return value GWSTATUS_NOT_IMPLEMENTED will cause our framework to end the game.
     
-    // Loop doSomething
+// Loop doSomething
     
     for(int i = 0; i < m_actors.size(); i++) {
         if(m_actors[i]->isAlive()) {
@@ -148,24 +169,7 @@ int StudentWorld::move()
 // Status Text
     setGameStatText("P1 Roll: " + to_string(getPeach()->getTicks()/8) + " Stars: " + to_string(getPeach()->getStars()) + " $$: "+ to_string(getPeach()->getCoins()) + " " + ((getPeach()->hasVortex())?"VOR ":"") + "| Time: " + to_string(timeRemaining()) + " | Bank: " + to_string(getBank()) + " | P2 Roll: " + to_string(getYoshi()->getTicks()/8) + " Stars: " + to_string(getYoshi()->getStars()) + " $$: " + to_string(getYoshi()->getCoins()) +" " + ((getYoshi()->hasVortex())?"VOR":""));
 //
-    // NEED TO CHECK IF YOSHI OR PEACH WON BY CHECKING THE STARS AND COINS
-    if (timeRemaining() <= 0){
-        PlayerAvatar* winner;
-        // If stars not equal, whoever has more stars wins
-        if ( m_peach->getStars() != m_yoshi->getStars() ) {
-            winner = m_peach->getStars()>m_yoshi->getStars()?m_peach:m_yoshi;
-        }
-        // If stars not equal, whoever has more stars wins
-        else if ( m_peach->getCoins() != m_yoshi->getCoins() )  {
-            winner = m_peach->getCoins()>m_yoshi->getCoins()?m_peach:m_yoshi;
-        } else {
-            winner = randInt(1, 2) == 1?m_yoshi:m_peach;
-        }
-        
-        
-        setFinalScore(winner->getStars(), winner->getCoins());
-        return winner == m_peach?GWSTATUS_PEACH_WON:GWSTATUS_YOSHI_WON;
-    }
+    
 //    
 	return GWSTATUS_CONTINUE_GAME;
 }

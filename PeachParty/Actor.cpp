@@ -26,6 +26,7 @@ void Activator::initPlayers() {
 }
 
 void Activator::doSomething() {
+    if (!isAlive()) return;
     affectBothPlayers();
 }
 
@@ -41,15 +42,6 @@ void Activator::affectBothPlayers() {
 // ---------------------- CoinSquare ----------------------
 CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Activator(w, grants?IID_BLUE_COIN_SQUARE:IID_RED_COIN_SQUARE, initX, initY, right, 1),Actor(w, grants?IID_BLUE_COIN_SQUARE:IID_RED_COIN_SQUARE, initX, initY, right, 1){
     m_grantsCoins = grants;
-}
-
-void CoinSquare::doSomething() {
-//    std::cerr << "coinsquare do" << std::endl;
-    if (!isAlive()) return;
-//    std::cerr << "coinsquare thru" << std::endl;
-
-    affectBothPlayers();
-    
 }
 
 void CoinSquare::affectPlayer(PlayerAvatar * p) {
@@ -72,9 +64,6 @@ StarSquare::StarSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_S
     
 }
 
-void StarSquare::doSomething() {
-    affectBothPlayers();
-}
 
 void StarSquare::affectPlayer(PlayerAvatar * p) {
     // Exit if not new
@@ -90,10 +79,6 @@ void StarSquare::affectPlayer(PlayerAvatar * p) {
  //---------------------- BankSquare ----------------------
 BankSquare::BankSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_BANK_SQUARE, initX, initY, right, 1),Actor(w, IID_BANK_SQUARE, initX, initY, right, 1){
     
-}
-
-void BankSquare::doSomething() {
-    affectBothPlayers();
 }
 
 void BankSquare::affectPlayer(PlayerAvatar * p) {
@@ -120,10 +105,6 @@ DirectionSquare::DirectionSquare(StudentWorld* w, int dir, int initX, int initY)
     m_dir = dir;
 }
 
-void DirectionSquare::doSomething() {
-   affectBothPlayers();
-}
-
 void DirectionSquare::affectPlayer(PlayerAvatar * p) {
    // Exit if not new
     p->setMoveDir(m_dir);
@@ -135,18 +116,15 @@ EventSquare::EventSquare(StudentWorld* w, int initX, int initY):Activator(w, IID
     
 }
 
-void EventSquare::doSomething() {
-    affectBothPlayers();
-}
-
 void EventSquare::affectPlayer(PlayerAvatar * p) {
     // Exit if not new or not landed
     if( ( p->getLastX() == getX() && p->getLastY() == getY() ) || p->getTicks() != 0) {
         return;
     }
 //    std::cerr << "invoking event square!" << std::endl;
-    switch( randInt(0,2) ) {
+    switch( randInt(0,0) ) {
         case 0:
+            p->setTeleported(true);
             p->randomTP();
             getWorld()->playSound(SOUND_PLAYER_TELEPORT);
             break;
@@ -164,10 +142,6 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
 // ---------------------- DroppingSquare ----------------------
 DroppingSquare::DroppingSquare(StudentWorld* w, int initX, int initY):Activator(w, IID_DROPPING_SQUARE, initX, initY, right, 1),Actor(w, IID_DROPPING_SQUARE, initX, initY, right, 1){
     
-}
-
-void DroppingSquare::doSomething() {
-    affectBothPlayers();
 }
 
 void DroppingSquare::affectPlayer(PlayerAvatar * p) {
@@ -413,6 +387,7 @@ PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):M
     m_playerNum = isPeach?1:2;
     m_lastX = initX*SPRITE_WIDTH;
     m_lastY = initY*SPRITE_HEIGHT;
+    m_justTeleported = false;
 }
 
 
@@ -511,7 +486,7 @@ void PlayerAvatar::doSomething(){
     //std::cout << "numpaths: " << numPaths << std::endl;
     // IF AT FORK, attempt to change direction based on input
     Board::GridEntry currentSquare = getWorld()->getSquare(getX()/SPRITE_WIDTH, getY()/SPRITE_HEIGHT);
-    if (numPaths >2 && currentSquare != Board::down_dir_square && currentSquare != Board::left_dir_square && currentSquare != Board::right_dir_square && currentSquare != Board::up_dir_square ) {
+    if ((numPaths >2||wasJustTeleported()) && currentSquare != Board::down_dir_square && currentSquare != Board::left_dir_square && currentSquare != Board::right_dir_square && currentSquare != Board::up_dir_square ) {
         //std::cerr << "X: " <<getX() << ", Y: " << getY() << std::endl;
         
         //std::cerr << "NUMPATHS OVER 2" << std::endl;
@@ -521,21 +496,25 @@ void PlayerAvatar::doSomething(){
                 if (getMoveDir() == down || nextTileEmpty(up)==1) return;
                 setMoveDir(up);
                 setDirection(0);
+                setTeleported(false);
                 break;
             case ACTION_RIGHT:
                 if (getMoveDir() == left || nextTileEmpty(right)==1) return;
                 setMoveDir(right);
                 setDirection(0);
+                setTeleported(false);
                 break;
             case ACTION_DOWN:
                 if (getMoveDir() == up || nextTileEmpty(down)==1) return;
                 setMoveDir(down);
                 setDirection(0);
+                setTeleported(false);
                 break;
             case ACTION_LEFT:
                 if (getMoveDir() == right || nextTileEmpty(left)==1) return;
                 setMoveDir(left);
                 setDirection(180);
+                setTeleported(false);
                 break;
             default:
                 return;

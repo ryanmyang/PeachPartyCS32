@@ -33,16 +33,18 @@ public:
     virtual void affectPlayer(PlayerAvatar* p) = 0;
     void affectBothPlayers();
     void initPlayers();
+    
 private:
     PlayerAvatar* m_peach;
     PlayerAvatar* m_yoshi;
+    
     
 
 };
 
 class CoinSquare : public Activator {
 public:
-    virtual void doSomething();
+
     virtual void affectPlayer(PlayerAvatar* p);
     CoinSquare(StudentWorld* w, bool grants, int initX, int initY);
     virtual bool dropReplace() {return true;}
@@ -53,7 +55,7 @@ public:
 
 class StarSquare : public Activator {
 public:
-    virtual void doSomething();
+
     virtual void affectPlayer(PlayerAvatar* p);
     StarSquare(StudentWorld* w, int initX, int initY);
     virtual bool dropReplace() {return true;}
@@ -61,7 +63,6 @@ public:
 
 class BankSquare : public Activator {
 public:
-    virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     BankSquare(StudentWorld* w, int initX, int initY);
     virtual bool dropReplace() {return true;}
@@ -69,7 +70,7 @@ public:
 
 class DirectionSquare : public Activator {
 public:
-    virtual void doSomething();
+
     virtual void affectPlayer(PlayerAvatar* p);
     DirectionSquare(StudentWorld* w, int dir, int initX, int initY);
     virtual bool dropReplace() {return true;}
@@ -79,7 +80,6 @@ private:
 
 class EventSquare : public Activator {
 public:
-    virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     EventSquare(StudentWorld* w, int initX, int initY);
     virtual bool dropReplace() {return true;}
@@ -87,7 +87,6 @@ public:
 
 class DroppingSquare : public Activator {
 public:
-    virtual void doSomething();
     virtual void affectPlayer(PlayerAvatar* p);
     DroppingSquare(StudentWorld* w, int initX, int initY);
         
@@ -179,6 +178,8 @@ public:
     void forceDir() {m_forcedDir = true;}
     void swap();
     bool isWaiting() {return m_waitingToRoll;}
+    void setTeleported(bool b) {m_justTeleported = b;}
+    bool wasJustTeleported() {return m_justTeleported;}
     
 private:
     int m_coins;
@@ -189,6 +190,7 @@ private:
     int m_lastY;
     bool m_forcedDir;
     bool m_hasVortex;
+    bool m_justTeleported;
 
 };
 
