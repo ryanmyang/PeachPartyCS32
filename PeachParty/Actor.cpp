@@ -122,7 +122,7 @@ void EventSquare::affectPlayer(PlayerAvatar * p) {
         return;
     }
 //    std::cerr << "invoking event square!" << std::endl;
-    switch( randInt(0,0) ) {
+    switch( randInt(0,2) ) {
         case 0:
             p->setTeleported(true);
             p->randomTP();
@@ -340,7 +340,7 @@ Bowser::Bowser(StudentWorld* w, int initX, int initY):Baddie(w, IID_BOWSER, init
 void Bowser::affectPlayer(PlayerAvatar* p) {
     if( ( p->getLastY()==getY() && p->getLastX()==getX() && getLastY()==getY() && getLastX()==getX() ) || !p->isWaiting()) {return;}
     
-    switch(randInt(0, 0)) {
+    switch(randInt(0, 1)) {
         case 0:
             p->setCoins(0);
             getWorld()->playSound(SOUND_BOWSER_ACTIVATE);
