@@ -480,7 +480,7 @@ void PlayerAvatar::doSomething(){
         
         // c) Action roll
         if (action == ACTION_ROLL){
-            int dieRoll = randInt(1, 10));
+            int dieRoll = randInt(1, 10);
             setTicks(dieRoll * 8);
             m_waitingToRoll = false;
         }
