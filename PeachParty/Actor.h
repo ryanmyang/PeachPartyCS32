@@ -102,11 +102,16 @@ public:
     int nextTileEmpty(int moveDir);
     void adjustIfAtTurn();
     void randomTP();
-
+    int getLastX() {return m_lastX;}
+    int getLastY() {return m_lastY;}
+    void setLastX(int x) {m_lastX = x;}
+    void setLastY(int y) {m_lastY = y;}
     
 private:
     int m_ticks_to_move;
     int m_moveDir = 0;
+    int m_lastX;
+    int m_lastY;
 };
 
 // BADDIE
@@ -123,6 +128,7 @@ private:
     int m_pauseCount;
     bool m_isPaused;
     int m_maxWander;
+    
 };
 
 // BOO
@@ -172,8 +178,7 @@ public:
     void addStars(int s) {m_stars+=s;}
     void setStars(int s) {m_stars=s;}
     int getPlayerNum() {return m_playerNum;}
-    int getLastX() {return m_lastX;}
-    int getLastY() {return m_lastY;}
+    
     bool forcedDir() {return m_forcedDir;}
     void forceDir() {m_forcedDir = true;}
     void swap();

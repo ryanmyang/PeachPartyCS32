@@ -45,15 +45,15 @@ CoinSquare::CoinSquare(StudentWorld* w, bool grants, int initX, int initY):Activ
 }
 
 void CoinSquare::affectPlayer(PlayerAvatar * p) {
-    std::cerr << "coinsquare affect" << std::endl;
+//    std::cerr << "coinsquare affect" << std::endl;
 
     // Exit if not new, or if not stopped
     if( (p->getLastX() == getX() && p->getLastY() == getY()) || p->getTicks()!=0) {
-        std::cerr << "not new or not stopped" << p->getTicks() << std::endl;
+//        std::cerr << "not new or not stopped" << p->getTicks() << std::endl;
         return;
     }
     
-    std::cerr << "coin affect player " << p->getPlayerNum() << std::endl;
+//    std::cerr << "coin affect player " << p->getPlayerNum() << std::endl;
 
     p->addCoins( m_grantsCoins?3:-3);
     getWorld()->playSound(m_grantsCoins?SOUND_GIVE_COIN:SOUND_TAKE_COIN);
@@ -228,6 +228,8 @@ Baddie::Baddie(StudentWorld* w, int img, int initX, int initY, int maxWander, in
     m_pauseCount = 180;
     m_isPaused = true;
     m_maxWander = maxWander;
+    setLastX(initX * SPRITE_WIDTH);
+    setLastY(initY * SPRITE_WIDTH);
 }
 
 void Baddie::impact() {
@@ -240,6 +242,7 @@ void Baddie::impact() {
 
 // Mostly identical doSomething() function for both baddies
 void Baddie::doSomething() {
+    
     if(m_isPaused) {
         affectBothPlayers();
         
@@ -261,9 +264,13 @@ void Baddie::doSomething() {
             setDirection(newDir==left?180:0);
             m_isPaused = false;
         }
+        setLastX(getX());
+        setLastY(getY());
     }
     // else if walking
     else {
+        setLastX(getX());
+        setLastY(getY());
         // a If on square and at a fork
         int numPaths = 0;
         for (int d = 0; d < 360; d+=90) {
@@ -302,8 +309,10 @@ Boo::Boo(StudentWorld* w, int initX, int initY):Baddie(w, IID_BOO, initX, initY,
 }
 
 void Boo::affectPlayer(PlayerAvatar* p) {
-    if( (p->getLastY()==getY() && p->getLastX()==getX()) || !p->isWaiting()) {return;}
-    
+    // Do nothing if both boo and the player's last square was this one, OR if the player is passing thru
+    if( ( p->getLastY()==getY() && p->getLastX()==getX() && getLastY()==getY() && getLastX()==getX() ) || !p->isWaiting()) {return;}
+    std::cerr << "boo success" << std::endl;
+
     PlayerAvatar* other = p->getPlayerNum()==1?getWorld()->getYoshi():getWorld()->getPeach();
     switch(randInt(0, 1)) {
         case 0:{
@@ -329,9 +338,9 @@ Bowser::Bowser(StudentWorld* w, int initX, int initY):Baddie(w, IID_BOWSER, init
 }
 
 void Bowser::affectPlayer(PlayerAvatar* p) {
-    if( (p->getLastY()==getY() && p->getLastX()==getX()) || !p->isWaiting()) {return;}
+    if( ( p->getLastY()==getY() && p->getLastX()==getX() && getLastY()==getY() && getLastX()==getX() ) || !p->isWaiting()) {return;}
     
-    switch(randInt(0, 1)) {
+    switch(randInt(0, 0)) {
         case 0:
             p->setCoins(0);
             getWorld()->playSound(SOUND_BOWSER_ACTIVATE);
@@ -385,8 +394,8 @@ PlayerAvatar::PlayerAvatar(StudentWorld*w, bool isPeach, int initX, int initY):M
     m_hasVortex = false;
     m_waitingToRoll = true;
     m_playerNum = isPeach?1:2;
-    m_lastX = initX*SPRITE_WIDTH;
-    m_lastY = initY*SPRITE_HEIGHT;
+    setLastX(initX*SPRITE_WIDTH);
+    setLastY(initY*SPRITE_HEIGHT);
     m_justTeleported = false;
 }
 
@@ -424,15 +433,15 @@ void PlayerAvatar::swap() {
     m_waitingToRoll = other->m_waitingToRoll;
     other->m_waitingToRoll = tempWait;
     
-    other->m_lastX = other->getX();
-    other->m_lastY = other->getY();
-    
+    other->setLastX(other->getX());
+    other->setLastY(other->getY());
+
     
 }
 
 void PlayerAvatar::doSomething(){
-    m_lastX = getX();
-    m_lastY = getY();
+    setLastX(getX());
+    setLastY(getY());
     //std::cerr << "playerdoing: " << m_playerNum << "empty?:" << nextTileEmpty(getMoveDir())<< "movedir: "<< getMoveDir() << std::endl;
 //    std::cerr << "doSomething()" << std::endl;
     
@@ -493,25 +502,29 @@ void PlayerAvatar::doSomething(){
         int action = getWorld()->getAction(m_playerNum);
         switch (action) {
             case ACTION_UP:
-                if (getMoveDir() == down || nextTileEmpty(up)==1) return;
+                // Return if trying to go backwards and not just teleported, OR if its empty that way
+                if ((getMoveDir() == down &&!wasJustTeleported() )|| nextTileEmpty(up)==1) return;
                 setMoveDir(up);
                 setDirection(0);
                 setTeleported(false);
                 break;
             case ACTION_RIGHT:
-                if (getMoveDir() == left || nextTileEmpty(right)==1) return;
+                // Return if trying to go backwards and not just teleported, OR if its empty that way
+                if ((getMoveDir() == left &&!wasJustTeleported() )|| nextTileEmpty(right)==1) return;
                 setMoveDir(right);
                 setDirection(0);
                 setTeleported(false);
                 break;
             case ACTION_DOWN:
-                if (getMoveDir() == up || nextTileEmpty(down)==1) return;
+                // Return if trying to go backwards and not just teleported, OR if its empty that way
+                if ((getMoveDir() == up &&!wasJustTeleported() )|| nextTileEmpty(down)==1) return;
                 setMoveDir(down);
                 setDirection(0);
                 setTeleported(false);
                 break;
             case ACTION_LEFT:
-                if (getMoveDir() == right || nextTileEmpty(left)==1) return;
+                // Return if trying to go backwards and not just teleported, OR if its empty that way
+                if ((getMoveDir() == right &&!wasJustTeleported() )|| nextTileEmpty(left)==1) return;
                 setMoveDir(left);
                 setDirection(180);
                 setTeleported(false);
